@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mastering Reasoning: Fine-Tuning Gemma 3 with JAX and GRPO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+              mono: ['JetBrains Mono', 'monospace'],
+            },
+          },
+        },
+      }
+    </script>
+    <style>
+      body { background-color: #0f172a; color: #e2e8f0; }
+    </style>
+</head>
+<body class="min-h-screen py-12 px-4 md:px-0">
+    <article class="max-w-3xl mx-auto">
+        <header class="mb-12 text-center">
+            <div class="text-slate-500 text-sm font-mono mb-2">2025-05-22</div>
+            <div class="flex justify-center gap-2 mb-6"><span class="px-2 py-1 rounded-full bg-slate-800 text-xs text-blue-400 border border-slate-700">JAX</span><span class="px-2 py-1 rounded-full bg-slate-800 text-xs text-blue-400 border border-slate-700">Gemma 3</span><span class="px-2 py-1 rounded-full bg-slate-800 text-xs text-blue-400 border border-slate-700">LLM</span><span class="px-2 py-1 rounded-full bg-slate-800 text-xs text-blue-400 border border-slate-700">GRPO</span><span class="px-2 py-1 rounded-full bg-slate-800 text-xs text-blue-400 border border-slate-700">Reinforcement Learning</span><span class="px-2 py-1 rounded-full bg-slate-800 text-xs text-blue-400 border border-slate-700">Machine Learning</span></div>
+        </header>
+        <div class="prose prose-invert prose-lg max-w-none">
+            <p class="mb-4 text-slate-300 leading-relaxed"><h1 class="text-4xl font-extrabold text-slate-100 mb-6 tracking-tight">Mastering Reasoning: Fine-Tuning Gemma 3 with JAX and GRPO (Part 1)</h1><p class="mb-4 text-slate-300 leading-relaxed">Hey there, AI builders! If you’ve been following the recent breakthroughs in Large Language Models (LLMs), you’ve likely heard of <strong class="font-bold text-white">DeepSeek R1<em class="italic text-slate-400">* and its clever use of *</em>Group Relative Policy Optimization (GRPO)</strong>. <p class="mb-4 text-slate-300 leading-relaxed">Today, we’re taking those state-of-the-art reasoning techniques and applying them to Google's latest lightweight powerhouse: <strong class="font-bold text-white">Gemma 3 1B</strong>. In this first part of our series, we’ll dive into why this stack is so potent and get our development environment ready for action.<p class="mb-4 text-slate-300 leading-relaxed"><h2 class="text-2xl font-bold text-slate-200 mt-10 mb-4 border-b border-slate-800 pb-2">Why Gemma 3?</h2><p class="mb-4 text-slate-300 leading-relaxed">Google’s Gemma 3 is a game-changer for open-weight models. Here’s why it’s our model of choice:
+*   <strong class="font-bold text-white">Multimodal Capabilities:</strong> It handles more than just text.
+*   <strong class="font-bold text-white">Efficiency:</strong> The 1B parameter version is small enough to be nimble but powerful enough to "think."
+*   <strong class="font-bold text-white">Native JAX Support:</strong> It’s built to fly on JAX and Google Cloud TPUs.<p class="mb-4 text-slate-300 leading-relaxed"><h2 class="text-2xl font-bold text-slate-200 mt-10 mb-4 border-b border-slate-800 pb-2">The Secret Sauce: GRPO</h2><p class="mb-4 text-slate-300 leading-relaxed">Reinforcement Learning from Human Feedback (RLHF) usually requires a complex "Critic" model to judge the "Actor." <strong class="font-bold text-white">GRPO</strong> simplifies this by:
+*   Generating a group of outputs for the same prompt.
+*   Comparing their scores relative to each other.
+*   Removing the need for a separate critic model, significantly saving VRAM and compute.<p class="mb-4 text-slate-300 leading-relaxed"><h2 class="text-2xl font-bold text-slate-200 mt-10 mb-4 border-b border-slate-800 pb-2">Why JAX/Flax?</h2><p class="mb-4 text-slate-300 leading-relaxed">While PyTorch is the industry standard, <strong class="font-bold text-white">JAX</strong> is becoming the go-to for high-performance research. It treats transformations as pure functions and leverages the XLA (Accelerated Linear Algebra) compiler to wring every drop of performance out of your hardware.<p class="mb-4 text-slate-300 leading-relaxed">---<p class="mb-4 text-slate-300 leading-relaxed"><h2 class="text-2xl font-bold text-slate-200 mt-10 mb-4 border-b border-slate-800 pb-2">Setting Up Your Environment</h2><p class="mb-4 text-slate-300 leading-relaxed">Before we can start training, we need a clean environment. This setup assumes you are using a <strong class="font-bold text-white">Cloud TPU<em class="italic text-slate-400">* (v3-8 or higher) or a powerful *</em>NVIDIA GPU</strong>.<p class="mb-4 text-slate-300 leading-relaxed"><h3 class="text-xl font-bold text-slate-300 mt-8 mb-3">1. Update the System</hF>
+<p class="mb-4 text-slate-300 leading-relaxed">$2irst, let’s ensure our package manager is up to date.<p class="mb-4 text-slate-300 leading-relaxed">``<code class="bg-slate-800 text-pink-400 rounded px-1.5 py-0.5 font-mono text-sm border border-slate-700">bash
+sudo apt-get update && sudo apt-get install -y git-lfs
+</code>`<code class="bg-slate-800 text-pink-400 rounded px-1.5 py-0.5 font-mono text-sm border border-slate-700"><p class="mb-4 text-slate-300 leading-relaxed"><h3 class="text-xl font-bold text-slate-300 mt-8 mb-3">2. Install JAX and Dependencies</hI>
+<p class="mb-4 text-slate-300 leading-relaxed">$2nstalling JAX varies depending on your hardware. Here is how you get the TPU version running:<p class="mb-4 text-slate-300 leading-relaxed"></code>`<code class="bg-slate-800 text-pink-400 rounded px-1.5 py-0.5 font-mono text-sm border border-slate-700">bash
+<h1 class="text-4xl font-extrabold text-slate-100 mb-6 tracking-tight">Install JAX for TPU</hp>
+<p class="mb-4 text-slate-300 leading-relaxed">$2ip install --upgrade "jax[tpu]" -f https://storage.googleapis.com/jax-releases/libtpu_releases.html<p class="mb-4 text-slate-300 leading-relaxed"><h1 class="text-4xl font-extrabold text-slate-100 mb-6 tracking-tight">Install Flax and Chex for neural network building blocks</hp>
+<p class="mb-4 text-slate-300 leading-relaxed">$2ip install flax chex
+</code>`<code class="bg-slate-800 text-pink-400 rounded px-1.5 py-0.5 font-mono text-sm border border-slate-700"><p class="mb-4 text-slate-300 leading-relaxed"><h3 class="text-xl font-bold text-slate-300 mt-8 mb-3">3. Clone the Gemma Repository</hW>
+<p class="mb-4 text-slate-300 leading-relaxed">$2e’ll use the official </code>gemma<code class="bg-slate-800 text-pink-400 rounded px-1.5 py-0.5 font-mono text-sm border border-slate-700"> implementation designed for JAX.<p class="mb-4 text-slate-300 leading-relaxed"></code>`<code class="bg-slate-800 text-pink-400 rounded px-1.5 py-0.5 font-mono text-sm border border-slate-700">bash
+git clone https://github.com/google-deepmind/gemma.git
+cd gemma
+pip install -e .
+</code>`<code class="bg-slate-800 text-pink-400 rounded px-1.5 py-0.5 font-mono text-sm border border-slate-700"><p class="mb-4 text-slate-300 leading-relaxed"><h3 class="text-xl font-bold text-slate-300 mt-8 mb-3">4. Verify Your Setup</hR>
+<p class="mb-4 text-slate-300 leading-relaxed">$2un this quick script to ensure JAX can "see" your accelerators.<p class="mb-4 text-slate-300 leading-relaxed"></code>`<code class="bg-slate-800 text-pink-400 rounded px-1.5 py-0.5 font-mono text-sm border border-slate-700">python
+import jax<p class="mb-4 text-slate-300 leading-relaxed"><h1 class="text-4xl font-extrabold text-slate-100 mb-6 tracking-tight">Check the number of devices available (e.g., 8 on a TPU v3-8)</hp>
+<p class="mb-4 text-slate-300 leading-relaxed">$2rint(f"Total devices: {jax.device_count()}") <p class="mb-4 text-slate-300 leading-relaxed"><h1 class="text-4xl font-extrabold text-slate-100 mb-6 tracking-tight">Check the platform (should be 'tpu' or 'gpu')</hp>
+<p class="mb-4 text-slate-300 leading-relaxed">$2rint(f"Platform: {jax.devices()[0].platform}")
+</code>``<p class="mb-4 text-slate-300 leading-relaxed">---<p class="mb-4 text-slate-300 leading-relaxed"><h2 class="text-2xl font-bold text-slate-200 mt-10 mb-4 border-b border-slate-800 pb-2">What’s Next?</h2><p class="mb-4 text-slate-300 leading-relaxed">We’ve got the foundation laid:
+<li class="ml-4 list-disc text-slate-300 mb-1">[x] High-level understanding of Gemma 3 and GRPO.</li>
+<li class="ml-4 list-disc text-slate-300 mb-1">[x] JAX environment configured.</li>
+<li class="ml-4 list-disc text-slate-300 mb-1">[x] Hardware verified.</li><p class="mb-4 text-slate-300 leading-relaxed">In <strong class="font-bold text-white">Part 2</strong>, we are going to dive deep into the code. We’ll implement the GRPO logic, define our reward functions, and start the actual training process to turn Gemma 3 into a reasoning machine.<p class="mb-4 text-slate-300 leading-relaxed"><strong class="font-bold text-white">Stay tuned—the era of efficient reasoning is just beginning!</strong>
+        </div>
+        <footer class="mt-20 pt-8 border-t border-slate-800 text-center text-slate-500 text-sm">
+            Published with PubStation One
+        </footer>
+    </article>
+</body>
+</html>
