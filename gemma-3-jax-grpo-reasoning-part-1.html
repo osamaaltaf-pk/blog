@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>"Stop Building Dumb LLMs: Tune Gemma-3 with GRPO in JAX"</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+              mono: ['JetBrains Mono', 'monospace'],
+            },
+          },
+        },
+      }
+    </script>
+    <style>
+      body { background-color: #0f172a; color: #e2e8f0; }
+    </style>
+</head>
+<body class="min-h-screen py-12 px-4 md:px-0">
+    <article class="max-w-3xl mx-auto">
+        <header class="mb-12 text-center">
+            <div class="text-slate-500 text-sm font-mono mb-2">2025-03-24</div>
+            <div class="flex justify-center gap-2 mb-6"><span class="px-2 py-1 rounded-full bg-slate-800 text-xs text-blue-400 border border-slate-700">AI</span><span class="px-2 py-1 rounded-full bg-slate-800 text-xs text-blue-400 border border-slate-700">Machine Learning</span><span class="px-2 py-1 rounded-full bg-slate-800 text-xs text-blue-400 border border-slate-700">JAX</span><span class="px-2 py-1 rounded-full bg-slate-800 text-xs text-blue-400 border border-slate-700">Gemma-3</span><span class="px-2 py-1 rounded-full bg-slate-800 text-xs text-blue-400 border border-slate-700">GRPO</span><span class="px-2 py-1 rounded-full bg-slate-800 text-xs text-blue-400 border border-slate-700">DeepSeek</span><span class="px-2 py-1 rounded-full bg-slate-800 text-xs text-blue-400 border border-slate-700">LLM</span></div>
+        </header>
+        <div class="prose prose-invert prose-lg max-w-none">
+            <p class="mb-4 text-slate-300 leading-relaxed"><h1 class="text-4xl font-extrabold text-slate-100 mb-6 tracking-tight">Stop Building Dumb LLMs: Tune Gemma-3 with GRPO in JAX</h1><p class="mb-4 text-slate-300 leading-relaxed">Reasoning is the new gold rush. 🪙<p class="mb-4 text-slate-300 leading-relaxed">If your model isn't "thinking" before it speaks, it’s already obsolete. But here is the problem: Reinforcement Learning from Human Feedback (RLHF) is expensive, slow, and requires a massive "Critic" model that eats your VRAM for breakfast.<p class="mb-4 text-slate-300 leading-relaxed">Enter <strong class="font-bold text-white">GRPO (Group Relative Policy Optimization)</strong>. <p class="mb-4 text-slate-300 leading-relaxed">The secret sauce behind DeepSeek-R1 is now available for the rest of us. We're combining it with <strong class="font-bold text-white">Gemma-3 1B<em class="italic text-slate-400">* and the raw speed of *</em>JAX</strong> to build a reasoning powerhouse on a budget. 🚀<p class="mb-4 text-slate-300 leading-relaxed">This is Part 1: The Blueprint and the Environment.<p class="mb-4 text-slate-300 leading-relaxed">---<p class="mb-4 text-slate-300 leading-relaxed"><h2 class="text-2xl font-bold text-slate-200 mt-10 mb-4 border-b border-slate-800 pb-2">Why GRPO? (The "DeepSeek" Secret Sauce)</h2><p class="mb-4 text-slate-300 leading-relaxed">Most RL methods require two models:
+1.  <strong class="font-bold text-white">The Actor:</strong> The model you're training.
+2.  <strong class="font-bold text-white">The Critic:</strong> A second model that predicts the value of a state.<p class="mb-4 text-slate-300 leading-relaxed"><strong class="font-bold text-white">GRPO kills the Critic.</strong> 💀<p class="mb-4 text-slate-300 leading-relaxed">Instead of a second model, GRPO uses group statistics. It generates a bunch of responses for the same prompt, calculates their relative scores, and optimizes the Actor directly. <p class="mb-4 text-slate-300 leading-relaxed"><strong class="font-bold text-white">The result?</strong>
+<li class="ml-4 list-disc text-slate-300 mb-1">  Lower VRAM usage.</li>
+<li class="ml-4 list-disc text-slate-300 mb-1">  Faster iterations.</li>
+<li class="ml-4 list-disc text-slate-300 mb-1">  Less complexity.</li><p class="mb-4 text-slate-300 leading-relaxed">---<p class="mb-4 text-slate-300 leading-relaxed"><h2 class="text-2xl font-bold text-slate-200 mt-10 mb-4 border-b border-slate-800 pb-2">The Tech Stack: Why JAX and Gemma-3?</h2><p class="mb-4 text-slate-300 leading-relaxed">We aren't using PyTorch. We're using <strong class="font-bold text-white">JAX</strong>.<p class="mb-4 text-slate-300 leading-relaxed">Why? Because when you’re doing heavy mathematical lifting and parallelized computations, JAX’s <code class="bg-slate-800 text-pink-400 rounded px-1.5 py-0.5 font-mono text-sm border border-slate-700">jit</code> (Just-In-Time) compilation and <code class="bg-slate-800 text-pink-400 rounded px-1.5 py-0.5 font-mono text-sm border border-slate-700">vmap</code> (Vectorized Mapping) make PyTorch look like it's running in slow motion. 🏎️<p class="mb-4 text-slate-300 leading-relaxed">And <strong class="font-bold text-white">Gemma-3 1B</strong>? It’s the perfect candidate. It’s small enough to iterate quickly but architecturally advanced enough to handle complex reasoning tasks once tuned.<p class="mb-4 text-slate-300 leading-relaxed">---<p class="mb-4 text-slate-300 leading-relaxed"><h2 class="text-2xl font-bold text-slate-200 mt-10 mb-4 border-b border-slate-800 pb-2">Step 1: Setting Up the War Room</h2><p class="mb-4 text-slate-300 leading-relaxed">Before we start training, we need the right tools. We'll be using <code class="bg-slate-800 text-pink-400 rounded px-1.5 py-0.5 font-mono text-sm border border-slate-700">Orbax</code> for checkpointing and <code class="bg-slate-800 text-pink-400 rounded px-1.5 py-0.5 font-mono text-sm border border-slate-700">Flax</code> for the neural network layers.<p class="mb-4 text-slate-300 leading-relaxed"><h3 class="text-xl font-bold text-slate-300 mt-8 mb-3">1. Install Dependencies</h3><p class="mb-4 text-slate-300 leading-relaxed">You'll need a TPU or a high-end GPU for this. JAX loves HBM (High Bandwidth Memory).<p class="mb-4 text-slate-300 leading-relaxed">``<code class="bg-slate-800 text-pink-400 rounded px-1.5 py-0.5 font-mono text-sm border border-slate-700">bash
+<h1 class="text-4xl font-extrabold text-slate-100 mb-6 tracking-tight">Update JAX for your specific hardware (CUDA 12 example)</hp>
+<p class="mb-4 text-slate-300 leading-relaxed">$2ip install --upgrade "jax[cuda12_pip]" -f https://storage.googleapis.com/jax-releases/jax_releases.html<p class="mb-4 text-slate-300 leading-relaxed"><h1 class="text-4xl font-extrabold text-slate-100 mb-6 tracking-tight">Install the essentials</hp>
+<p class="mb-4 text-slate-300 leading-relaxed">$2ip install flax optax chex transformers datasets
+pip install git+https://github.com/google/orbax.git # For lightning-fast checkpointing
+</code>`<code class="bg-slate-800 text-pink-400 rounded px-1.5 py-0.5 font-mono text-sm border border-slate-700"><p class="mb-4 text-slate-300 leading-relaxed"><h3 class="text-xl font-bold text-slate-300 mt-8 mb-3">2. Verify the Backend</h3><p class="mb-4 text-slate-300 leading-relaxed">Let’s make sure JAX can see your hardware. If this returns "cpu", stop and fix your drivers.<p class="mb-4 text-slate-300 leading-relaxed"></code>`<code class="bg-slate-800 text-pink-400 rounded px-1.5 py-0.5 font-mono text-sm border border-slate-700">python
+import jax<p class="mb-4 text-slate-300 leading-relaxed"><h1 class="text-4xl font-extrabold text-slate-100 mb-6 tracking-tight">Check if JAX is connected to the right hardware</hd>
+<p class="mb-4 text-slate-300 leading-relaxed">$2evices = jax.devices()
+print(f"✅ JAX is running on: {jax.lib.xla_bridge.get_backend().platform}")
+print(f"🔥 Number of devices: {len(devices)}")
+</code>`<code class="bg-slate-800 text-pink-400 rounded px-1.5 py-0.5 font-mono text-sm border border-slate-700"><p class="mb-4 text-slate-300 leading-relaxed">---<p class="mb-4 text-slate-300 leading-relaxed"><h2 class="text-2xl font-bold text-slate-200 mt-10 mb-4 border-b border-slate-800 pb-2">Step 2: Initializing Gemma-3 in JAX</h2><p class="mb-4 text-slate-300 leading-relaxed">We’ll use the </code>transformers<code class="bg-slate-800 text-pink-400 rounded px-1.5 py-0.5 font-mono text-sm border border-slate-700"> library to load the weights but convert them to a JAX-friendly format. <p class="mb-4 text-slate-300 leading-relaxed"></code>`<code class="bg-slate-800 text-pink-400 rounded px-1.5 py-0.5 font-mono text-sm border border-slate-700">python
+from transformers import FlaxGemma2ForCausalLM, AutoTokenizer
+import jax.numpy as jnp<p class="mb-4 text-slate-300 leading-relaxed">model_id = "google/gemma-3-1b-it" # Using the Instruction Tuned variant<p class="mb-4 text-slate-300 leading-relaxed"><h1 class="text-4xl font-extrabold text-slate-100 mb-6 tracking-tight">Load the tokenizer</ht>
+<p class="mb-4 text-slate-300 leading-relaxed">$2okenizer = AutoTokenizer.from_pretrained(model_id)<p class="mb-4 text-slate-300 leading-relaxed"><h1 class="text-4xl font-extrabold text-slate-100 mb-6 tracking-tight">Load the model in Bfloat16 to save memory without losing precision</hm>
+<p class="mb-4 text-slate-300 leading-relaxed">$2odel, params = FlaxGemma2ForCausalLM.from_pretrained(
+    model_id, 
+    _do_init=False, 
+    dtype=jnp.bfloat16
+)<p class="mb-4 text-slate-300 leading-relaxed">print("💎 Model loaded into memory successfully.")
+</code>`<code class="bg-slate-800 text-pink-400 rounded px-1.5 py-0.5 font-mono text-sm border border-slate-700"><p class="mb-4 text-slate-300 leading-relaxed">---<p class="mb-4 text-slate-300 leading-relaxed"><h2 class="text-2xl font-bold text-slate-200 mt-10 mb-4 border-b border-slate-800 pb-2">Step 3: Defining the Reasoning Objective</h2><p class="mb-4 text-slate-300 leading-relaxed">In GRPO, we need a way to score our model's "thinking." Unlike standard fine-tuning, we aren't just predicting the next token; we're rewarding the <em class="italic text-slate-400">process</em>.<p class="mb-4 text-slate-300 leading-relaxed">Our environment needs to support:
+1.  <strong class="font-bold text-white">Format Rewards:</strong> Did the model use </code><thought>` tags?
+2.  <strong class="font-bold text-white">Accuracy Rewards:</strong> Is the final answer correct?<p class="mb-4 text-slate-300 leading-relaxed">In the next part, we will build the <strong class="font-bold text-white">Reward Function<em class="italic text-slate-400">* and the *</em>JAX Training Loop</strong> that makes this all possible.<p class="mb-4 text-slate-300 leading-relaxed">---<p class="mb-4 text-slate-300 leading-relaxed"><h2 class="text-2xl font-bold text-slate-200 mt-10 mb-4 border-b border-slate-800 pb-2">What’s Next?</h2><p class="mb-4 text-slate-300 leading-relaxed">We’ve got the hardware ready. We’ve got the model loaded. We’ve got the strategy.<p class="mb-4 text-slate-300 leading-relaxed">In <strong class="font-bold text-white">Part 2</strong>, we are going to:
+<li class="ml-4 list-disc text-slate-300 mb-1">  Implement the GRPO loss function in JAX.</li>
+<li class="ml-4 list-disc text-slate-300 mb-1">  Set up the group sampling mechanism.</li>
+<li class="ml-4 list-disc text-slate-300 mb-1">  Start the first training run.</li><p class="mb-4 text-slate-300 leading-relaxed"><strong class="font-bold text-white">Don't settle for "okay" models. Build models that think.</strong> 🧠<p class="mb-4 text-slate-300 leading-relaxed">Follow for Part 2. Let’s ship some reasoning. 👇
+        </div>
+        <footer class="mt-20 pt-8 border-t border-slate-800 text-center text-slate-500 text-sm">
+            Published with PubStation One
+        </footer>
+    </article>
+</body>
+</html>
